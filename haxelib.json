@@ -1,0 +1,13 @@
+{
+    "name": "ceramic",
+    "url" : "https://github.com/ceramic-engine/ceramic",
+    "license": "MIT",
+    "tags": ["cross", "platform", "2d", "multimedia", "framework"],
+    "description": "Install ceramic via haxelib",
+    "version": "0.1.0",
+    "classPath": "src/",
+    "releasenote": "Does nothing at the moment. Just setting things up and reserving the name on haxelib repo!",
+    "contributors": ["jeremyfa"],
+    "dependencies": {}
+  }
+  
