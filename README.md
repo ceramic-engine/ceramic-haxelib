@@ -23,7 +23,7 @@ ceramic
 
 **--cwd {path}**
 
-Specify a current working directory (can be used to install ceramic at a specific location). Usage: `haxelib run ceramic setup --cwd your/custom/path`
+Specify a custom working directory (can be used to install/update ceramic at a specific location). Usage: `haxelib run ceramic setup --cwd your/custom/path`
 
 **--version {tag}**
 

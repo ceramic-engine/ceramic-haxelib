@@ -48,12 +48,7 @@ class Main {
             case "Linux": 'linux';
         }
 
-        var ceramicDir = customCwd == null ? resolveCeramicParentDir(cwd) : customCwd;
-
-        ceramicZipPath = Path.join([ceramicDir, 'ceramic-$platform.zip']);
-        ceramicPath = Path.join([ceramicDir, 'ceramic']);
-        ceramicToolsPath = Path.join([ceramicPath, 'tools']);
-        ceramicPackagePath = Path.join([ceramicPath, 'tools', 'package.json']);
+        var ceramicDir = cwd;
 
         if (platform == null) {
             fail('Invalid platform.');
@@ -62,6 +57,16 @@ class Main {
         var commandName:String = null;
         if (argv.length > 0 && !argv[0].startsWith('-'))
             commandName = argv[0];
+
+        // When simply trying to run ceramic, check parent directories
+        if (customCwd == null && commandName != 'setup') {
+            ceramicDir = resolveCeramicParentDir(cwd);
+        }
+
+        ceramicZipPath = Path.join([ceramicDir, 'ceramic-$platform.zip']);
+        ceramicPath = Path.join([ceramicDir, 'ceramic']);
+        ceramicToolsPath = Path.join([ceramicPath, 'tools']);
+        ceramicPackagePath = Path.join([ceramicPath, 'tools', 'package.json']);
 
         switch commandName {
             default:
