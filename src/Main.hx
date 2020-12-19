@@ -89,8 +89,21 @@ class Main {
 
         var releaseInfo = Json.parse(requestUrl('https://api.github.com/repos/ceramic-engine/ceramic/releases/latest'));
 
-        // TODO allow to install specific version
-        var targetTag = releaseInfo.tag_name;
+        var targetTag = extractArgValue(argv, 'version');
+
+        if (targetTag == null) {
+            targetTag = releaseInfo.tag_name;
+        }
+        else if (!targetTag.startsWith('v')) {
+            targetTag = 'v' + targetTag;
+            try {
+                var explicitReleaseInfo = Json.parse(requestUrl('https://api.github.com/repos/ceramic-engine/ceramic/releases/tags/$targetTag'));
+                print('Resolved version tag: ${explicitReleaseInfo.tag_name}');
+            }
+            catch (e:Dynamic) {
+                fail('Did not find ceramic version tag: $targetTag');
+            }
+        }
 
         var confirmed = false;
 
@@ -111,8 +124,11 @@ class Main {
             print('ceramic is not installed. It will be installed to: $ceramicPath');
         }
         
-        if ('v' + installedVersion != targetTag) {
+        if (installedVersion == null) {
             confirmed = confirm('Install ceramic $targetTag? (y/n)');
+        }
+        else if ('v' + installedVersion != targetTag) {
+            confirmed = confirm('Update ceramic to $targetTag? (y/n)');
         }
         else {
             confirmed = confirm('Reinstall ceramic $targetTag? (y/n)');
