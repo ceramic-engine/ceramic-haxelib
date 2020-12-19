@@ -92,7 +92,7 @@ class Main {
 
     static function setup():Void {
 
-        var releaseInfo = Json.parse(requestUrl('https://api.github.com/repos/ceramic-engine/ceramic/releases/latest'));
+        var releaseInfo = resolveLatestRelease();
 
         var targetTag = extractArgValue(argv, 'version');
 
@@ -162,6 +162,26 @@ class Main {
             }
             runCeramic(ceramicPath, ['help']);
         }
+
+    }
+
+    static function resolveLatestRelease():Dynamic {
+
+        var releases:Array<Dynamic> = Json.parse(requestUrl('https://api.github.com/repos/ceramic-engine/ceramic/releases'));
+
+        for (release in releases) {
+            if (release.assets != null) {
+                var assets:Array<Dynamic> = release.assets;
+                for (asset in assets) {
+                    if (asset.name == 'ceramic-$platform.zip') {
+                        return release;
+                    }
+                }
+            }
+        }
+
+        fail('Failed to resolve latest ceramic version! Try again later?');
+        return null;
 
     }
 
