@@ -27,7 +27,7 @@ Specify a custom working directory (can be used to install/update ceramic at a s
 
 **--version {tag}**
 
-During setup, ask for a specific release of ceramic idenfied by the given version tag. Usage: `haxelib run ceramic setup --version v0.5.0`. [See available release](https://github.com/ceramic-engine/ceramic/releases/tag/v0.5.0a)
+During setup, ask for a specific release of ceramic idenfied by the given version tag. Usage: `haxelib run ceramic setup --version v0.5.0` ([see available releases](https://github.com/ceramic-engine/ceramic/releases)).
 
 ## About ceramic
 
