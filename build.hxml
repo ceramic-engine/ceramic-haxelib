@@ -1,3 +1,4 @@
 -cp src
 -main Main
+-lib akifox-asynchttp
 --neko run.n

@@ -1,0 +1,3 @@
+[submodule "git/akifox-asynchttp"]
+	path = git/akifox-asynchttp
+	url = git@github.com:ceramic-engine/akifox-asynchttp.git
