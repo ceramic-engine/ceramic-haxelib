@@ -35,7 +35,7 @@ class Main {
         var customCwd = extractArgValue(argv, 'cwd');
         if (customCwd != null) {
             if (!Path.isAbsolute(customCwd)) {
-                customCwd = Path.join([cwd, customCwd]);
+                customCwd = Path.normalize(Path.join([cwd, customCwd]));
             }
             cwd = customCwd;
         }
@@ -48,7 +48,7 @@ class Main {
             case "Linux": 'linux';
         }
 
-        var ceramicDir = resolveCeramicParentDir(cwd);
+        var ceramicDir = customCwd == null ? resolveCeramicParentDir(cwd) : customCwd;
 
         ceramicZipPath = Path.join([ceramicDir, 'ceramic-$platform.zip']);
         ceramicPath = Path.join([ceramicDir, 'ceramic']);
