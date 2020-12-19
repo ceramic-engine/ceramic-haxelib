@@ -60,7 +60,7 @@ class Main {
         }
 
         var commandName:String = null;
-        if (argv.length > 0)
+        if (argv.length > 0 && !argv[0].startsWith('-'))
             commandName = argv[0];
 
         switch commandName {
@@ -106,6 +106,9 @@ class Main {
 
         if (installedVersion != null) {
             print('Detected existing ceramic version v$installedVersion ($ceramicPath)');
+        }
+        else {
+            print('ceramic is not installed. It will be installed to: $ceramicPath');
         }
         
         if ('v' + installedVersion != targetTag) {
