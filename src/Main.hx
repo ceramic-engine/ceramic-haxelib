@@ -154,7 +154,7 @@ class Main {
             }
 
             // Extract files
-            extractFile(ceramicZipPath, ceramicPath);
+            unzipFile(ceramicZipPath, ceramicPath);
 
             var confirmLink = confirm('Make `ceramic` command available globally? (y/n)');
             if (confirmLink) {
@@ -289,56 +289,82 @@ class Main {
         }
     }
 
-    static function extractFile(sourceZIP:String, targetPath:String, ignoreRootFolder:String = ""):Void {
+    static function unzipFile(source:String, targetPath:String):Void {
 
-        var file = File.read(sourceZIP, true);
-        var entries = Reader.readZip(file);
-        file.close();
+        if (platform == 'mac' || platform == 'linux') {
 
-        var isWindows = Sys.systemName() == 'Windows';
+            var prevCwd = Sys.getCwd();
+            Sys.setCwd(cwd);
+            Sys.command('unzip', [source, '-d', targetPath]);
+            Sys.setCwd(prevCwd);
 
-        var numFiles = 0;
-
-        for (entry in entries) {
-            var fileName = entry.fileName;
-
-            if (fileName.charAt(0) != "/" && fileName.charAt(0) != "\\" && fileName.split("..").length <= 1) {
-                var dirs = ~/[\/\\]/g.split(fileName);
-
-                if ((ignoreRootFolder != "" && dirs.length > 1) || ignoreRootFolder == "") {
-                    if (ignoreRootFolder != "") {
-                        dirs.shift();
-                    }
-
-                    var path = "";
-                    var file = dirs.pop();
-
-                    for (d in dirs) {
-                        path += d;
-                        FileSystem.createDirectory(targetPath + "/" + path);
-                        path += "/";
-                    }
-
-                    if (file == "") {
-                        continue; // Was just a directory
-                    }
-
-                    path += file;
-
-                    print("Extract " + path);
-
-                    var data = Reader.unzip(entry);
-                    var f = File.write(targetPath + "/" + path, true);
-
-                    if (!isWindows) {
-                        Sys.command('chmod', ['755', targetPath + "/" + path]);
-                    }
-
-                    f.write(data);
-                    f.close();
-                }
-            }
         }
+        else if (platform == 'windows') {
+
+            var escapedArgs = [];
+            for (arg in ['Expand-Archive', '-LiteralPath', source, '-DestinationPath', targetPath]) {
+                escapedArgs.push(haxe.SysTools.quoteWinArg(arg, true));
+            }
+
+            var prevCwd = Sys.getCwd();
+            Sys.setCwd(cwd);
+            Sys.command('powershell', ['-command', escapedArgs.join(' ')]);
+            Sys.setCwd(prevCwd);
+
+        }
+        else {
+
+            throw "Unzip on platform " + platform + " not supported";
+        }
+
+        // var file = File.read(source, true);
+        // var entries = Reader.readZip(file);
+        // file.close();
+
+        // var isWindows = Sys.systemName() == 'Windows';
+
+        // var numFiles = 0;
+
+        // for (entry in entries) {
+        //     var fileName = entry.fileName;
+
+        //     if (fileName.charAt(0) != "/" && fileName.charAt(0) != "\\" && fileName.split("..").length <= 1) {
+        //         var dirs = ~/[\/\\]/g.split(fileName);
+
+        //         if ((ignoreRootFolder != "" && dirs.length > 1) || ignoreRootFolder == "") {
+        //             if (ignoreRootFolder != "") {
+        //                 dirs.shift();
+        //             }
+
+        //             var path = "";
+        //             var file = dirs.pop();
+
+        //             for (d in dirs) {
+        //                 path += d;
+        //                 FileSystem.createDirectory(targetPath + "/" + path);
+        //                 path += "/";
+        //             }
+
+        //             if (file == "") {
+        //                 continue; // Was just a directory
+        //             }
+
+        //             path += file;
+
+        //             print("Extract " + path);
+
+        //             var data = Reader.unzip(entry);
+        //             var f = File.write(targetPath + "/" + path, true);
+
+        //             if (!isWindows) {
+        //                 Sys.command('chmod', ['755', targetPath + "/" + path]);
+        //             }
+
+        //             f.write(data);
+        //             f.close();
+        //         }
+        //     }
+        // }
 
         print("Done");
         
