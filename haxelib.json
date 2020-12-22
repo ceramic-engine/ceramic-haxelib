@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["cross", "platform", "2d", "multimedia", "framework"],
     "description": "Install ceramic via haxelib",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "classPath": "src/",
-    "releasenote": "Install ceramic via haxelib",
+    "releasenote": "Minor README changes",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }

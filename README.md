@@ -23,11 +23,13 @@ ceramic
 
 **--cwd {path}**
 
-Specify a custom working directory (can be used to install/update ceramic at a specific location). Usage: `haxelib run ceramic setup --cwd your/custom/path`
+Specify a custom working directory (can be used to install/update ceramic at a specific location).
+Usage: `haxelib run ceramic setup --cwd your/custom/path`
 
 **--version {tag}**
 
-During setup, ask for a specific release of ceramic idenfied by the given version tag. Usage: `haxelib run ceramic setup --version v0.5.0` ([see available releases](https://github.com/ceramic-engine/ceramic/releases)).
+During setup, ask for a specific release of ceramic identified by the given version tag.
+Usage: `haxelib run ceramic setup --version v0.5.0` ([see available releases](https://github.com/ceramic-engine/ceramic/releases)).
 
 ## About ceramic
 
