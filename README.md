@@ -31,6 +31,18 @@ Usage: `haxelib run ceramic setup --cwd your/custom/path`
 During setup, ask for a specific release of ceramic identified by the given version tag.
 Usage: `haxelib run ceramic setup --version v0.5.0` ([see available releases](https://github.com/ceramic-engine/ceramic/releases)).
 
+**--install**
+
+Run installation procedure without asking for confirmation.
+
+**--global**
+
+Make ceramic installation global without having to confirm it manually.
+
+**--local**
+
+Make ceramic installation local (not global) without having to confirm it manually.
+
 ## About ceramic
 
 Get more info about ceramic [in its main repository](https://github.com/ceramic-engine/ceramic).

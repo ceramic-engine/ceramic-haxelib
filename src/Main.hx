@@ -129,14 +129,24 @@ class Main {
             print('ceramic is not installed. It will be installed to: $ceramicPath');
         }
         
+        var msg:String;
         if (installedVersion == null) {
-            confirmed = confirm('Install ceramic $targetTag? (y/n)');
+            msg = 'Install ceramic $targetTag? (y/n)';
         }
         else if ('v' + installedVersion != targetTag) {
-            confirmed = confirm('Update ceramic to $targetTag? (y/n)');
+            msg = 'Update ceramic to $targetTag? (y/n)';
         }
         else {
-            confirmed = confirm('Reinstall ceramic $targetTag? (y/n)');
+            msg = 'Reinstall ceramic $targetTag? (y/n)';
+        }
+
+        if (extractArgFlag(argv, 'install')) {
+            confirmed = true;
+            print(msg);
+            print('y');
+        }
+        else {
+            confirmed = confirm(msg);
         }
 
         if (confirmed) {
@@ -156,7 +166,21 @@ class Main {
             // Extract files
             unzipFile(ceramicZipPath, ceramicPath);
 
-            var confirmLink = confirm('Make `ceramic` command available globally? (y/n)');
+            msg = 'Make `ceramic` command available globally? (y/n)';
+            var confirmLink = false;
+            if (extractArgFlag(argv, 'global')) {
+                confirmLink = true;
+                print(msg);
+                print('y');
+            }
+            else if (extractArgFlag(argv, 'local')) {
+                confirmLink = false;
+                print(msg);
+                print('n');
+            }
+            else {
+                confirmLink = confirm(msg);
+            }
             if (confirmLink) {
                 runCeramic(ceramicPath, ['link']);
             }
@@ -291,11 +315,13 @@ class Main {
 
     static function unzipFile(source:String, targetPath:String):Void {
 
+        print('Unzipping... (this may take a while)');
+
         if (platform == 'mac' || platform == 'linux') {
 
             var prevCwd = Sys.getCwd();
             Sys.setCwd(cwd);
-            Sys.command('unzip', [source, '-d', targetPath]);
+            Sys.command('unzip', ['-q', source, '-d', targetPath]);
             Sys.setCwd(prevCwd);
 
         }
@@ -328,7 +354,7 @@ class Main {
 
                     path += file;
 
-                    print("Extract " + path);
+                    //print("Extract " + path);
 
                     var data = Reader.unzip(entry);
                     var f = File.write(targetPath + "/" + path, true);
@@ -357,14 +383,26 @@ class Main {
             for (name in FileSystem.readDirectory(toDelete)) {
 
                 var path = Path.join([toDelete, name]);
-                if (FileSystem.isDirectory(path)) {
-                    deleteRecursive(path);
-                } else {
+                if (FileSystem.exists(path)) {
+                    if (FileSystem.isDirectory(path)) {
+                        deleteRecursive(path);
+                    } else {
+                        FileSystem.deleteFile(path);
+                    }
+                }
+                else {
+                    // Could happen if the file is a symlink
                     FileSystem.deleteFile(path);
                 }
             }
 
-            FileSystem.deleteDirectory(toDelete);
+            try {
+                FileSystem.deleteDirectory(toDelete);
+            }
+            catch (e:Dynamic) {
+                // Could happen if the file is a symlink
+                FileSystem.deleteFile(toDelete);
+            }
 
         }
         else {
