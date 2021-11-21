@@ -1,11 +1,11 @@
 package;
 
-import haxe.Json;
-import com.akifox.asynchttp.HttpResponse;
 import com.akifox.asynchttp.HttpRequest;
+import com.akifox.asynchttp.HttpResponse;
 import haxe.Http;
-import haxe.zip.Reader;
+import haxe.Json;
 import haxe.io.Path;
+import haxe.zip.Reader;
 import sys.FileSystem;
 import sys.io.File;
 
@@ -26,6 +26,8 @@ class Main {
     static var ceramicZipPath:String;
 
     static var ceramicPackagePath:String;
+
+    static var ceramicGitHeadPath:String;
 
     public static function main():Void {
 
@@ -59,14 +61,20 @@ class Main {
             commandName = argv[0];
 
         // When simply trying to run ceramic, check parent directories
-        if (customCwd == null && commandName != 'setup') {
-            ceramicDir = resolveCeramicParentDir(cwd);
+        if (customCwd == null) {
+            ceramicDir = resolveCeramicDir(cwd);
+            if (ceramicDir == null) {
+                if (commandName != 'setup') {
+                    ceramicDir = resolveCeramicParentDir(cwd);
+                }
+            }
         }
 
         ceramicZipPath = Path.join([ceramicDir, 'ceramic-$platform.zip']);
         ceramicPath = Path.join([ceramicDir, 'ceramic']);
         ceramicToolsPath = Path.join([ceramicPath, 'tools']);
         ceramicPackagePath = Path.join([ceramicPath, 'tools', 'package.json']);
+        ceramicGitHeadPath = Path.join([ceramicPath, '.git', 'HEAD']);
 
         switch commandName {
             default:
@@ -81,11 +89,30 @@ class Main {
                     runCeramic(cwd, argv);
                 }
                 else {
-                    print('ceramic is not installed in current directory ($cwd)');
+                    print('ceramic is not installed globally or in current directory ($cwd)');
                     print('  To install it, run: haxelib run ceramic setup');
                 }
             case 'setup':
-                setup();
+                if (FileSystem.exists(ceramicGitHeadPath)) {
+                    print('');
+                    print('Your current installation of ceramic is managed via GIT');
+                    print('path: $ceramicPath');
+                    print('It cannot be updated via `haxelib run ceramic setup`.');
+                    print('');
+                    print('What you can do:');
+                    print('');
+                    print(' - Update your ceramic installation via GIT');
+                    print('');
+                    print(' - OR run `haxelib run ceramic setup --cwd \'some/custom/directory\'`');
+                    print('   to install ceramic somewhere else');
+                    print('');
+                    print(' - OR run `ceramic unlink` to disable your current global ceramic');
+                    print('   installation, then try to run this tool again');
+                    print('');
+                }
+                else {
+                    setup();
+                }
         }
 
     }
@@ -128,7 +155,7 @@ class Main {
         else {
             print('ceramic is not installed. It will be installed to: $ceramicPath');
         }
-        
+
         var msg:String;
         if (installedVersion == null) {
             msg = 'Install ceramic $targetTag? (y/n)';
@@ -205,6 +232,28 @@ class Main {
         }
 
         fail('Failed to resolve latest ceramic version! Try again later?');
+        return null;
+
+    }
+
+    static function resolveCeramicDir(cwd:String):String {
+
+        var output = '';
+
+        try {
+            var process = new sys.io.Process('ceramic', ['path']);
+            output += process.stdout.readAll().toString().trim();
+            process.close();
+        }
+        catch (e:Dynamic) {}
+
+        if (output.length > 0 && FileSystem.exists(Path.join([output, 'package.json']))) {
+            output = Path.directory(output);
+            if (output.endsWith('/ceramic') || output.endsWith('\\ceramic')) {
+                return Path.directory(output);
+            }
+        }
+
         return null;
 
     }
@@ -330,12 +379,12 @@ class Main {
             var file = File.read(source, true);
             var entries = Reader.readZip(file);
             file.close();
-    
+
             var numFiles = 0;
-    
+
             for (entry in entries) {
                 var fileName = entry.fileName;
-    
+
                 if (fileName.charAt(0) != "/" && fileName.charAt(0) != "\\" && fileName.split("..").length <= 1) {
                     var dirs = ~/[\/\\]/g.split(fileName);
 
@@ -371,11 +420,11 @@ class Main {
         }
 
         print("Done");
-        
+
     }
 
     static function deleteRecursive(toDelete:String):Void {
-        
+
         if (!FileSystem.exists(toDelete)) return;
 
         if (FileSystem.isDirectory(toDelete)) {
@@ -481,7 +530,7 @@ class Main {
     }
 
     static function extractArgFlag(args:Array<String>, name:String, remove:Bool = false):Bool {
-        
+
         var index = args.indexOf('--$name');
 
         if (index == -1) {
@@ -495,7 +544,7 @@ class Main {
         return true;
 
     }
-    
+
 }
 
 class Progress extends haxe.io.Output {
