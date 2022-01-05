@@ -67,6 +67,9 @@ class Main {
                 if (commandName != 'setup') {
                     ceramicDir = resolveCeramicParentDir(cwd);
                 }
+                else {
+                    ceramicDir = Path.normalize(cwd);
+                }
             }
         }
 
