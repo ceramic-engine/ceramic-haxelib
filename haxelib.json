@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["cross", "platform", "2d", "multimedia", "framework"],
     "description": "Install ceramic via haxelib",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "classPath": "src/",
-    "releasenote": "Smarter installer: detect global ceramic installation, detect ceramic managed via GIT (and forbid overwrite)",
+    "releasenote": "Fix failure to resolve some directories from CWD when no existing ceramic installation exist",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
