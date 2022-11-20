@@ -50,8 +50,6 @@ class Main {
             case "Linux": 'linux';
         }
 
-        var ceramicDir = cwd;
-
         if (platform == null) {
             fail('Invalid platform.');
         }
@@ -60,21 +58,24 @@ class Main {
         if (argv.length > 0 && !argv[0].startsWith('-'))
             commandName = argv[0];
 
-        // When simply trying to run ceramic, check parent directories
-        if (customCwd == null) {
-            ceramicDir = resolveCeramicDir(cwd);
-            if (ceramicDir == null) {
-                if (commandName != 'setup') {
-                    ceramicDir = resolveCeramicParentDir(cwd);
+        var env = Sys.environment();
+
+        // In case no ceramic was detected, check root/home directory
+        ceramicPath = resolveCeramicPath(cwd);
+        if (ceramicPath == null) {
+            if (customCwd == null) {
+                if (platform == 'windows') {
+                    cwd = cwd.substr(0, 1) + ':\\';
                 }
-                else {
-                    ceramicDir = Path.normalize(cwd);
+                else if (env.exists('HOME')) {
+                    cwd = env.get('HOME');
                 }
             }
+            ceramicPath = Path.join([cwd, 'ceramic']);
         }
 
-        ceramicZipPath = Path.join([ceramicDir, 'ceramic-$platform.zip']);
-        ceramicPath = Path.join([ceramicDir, 'ceramic']);
+
+        ceramicZipPath = Path.join([cwd, 'ceramic-$platform.zip']);
         ceramicToolsPath = Path.join([ceramicPath, 'tools']);
         ceramicPackagePath = Path.join([ceramicPath, 'tools', 'package.json']);
         ceramicGitHeadPath = Path.join([ceramicPath, '.git', 'HEAD']);
@@ -170,6 +171,10 @@ class Main {
             msg = 'Reinstall ceramic $targetTag? (y/n)';
         }
 
+        if (installedVersion != null) {
+            print('Please make sure Ceramic is not used when installing and Visual Studio Code is closed!');
+        }
+
         if (extractArgFlag(argv, 'install')) {
             confirmed = true;
             print(msg);
@@ -239,7 +244,7 @@ class Main {
 
     }
 
-    static function resolveCeramicDir(cwd:String):String {
+    static function resolveCeramicPath(cwd:String):String {
 
         var output = '';
 
@@ -250,32 +255,26 @@ class Main {
         }
         catch (e:Dynamic) {}
 
-        if (output.length > 0 && FileSystem.exists(Path.join([output, 'package.json']))) {
-            output = Path.directory(output);
-            if (output.endsWith('/ceramic') || output.endsWith('\\ceramic')) {
-                return Path.directory(output);
+        if (output.length == 0) {
+            try {
+                var process = new sys.io.Process('ceramic.cmd', ['path']);
+                output += process.stdout.readAll().toString().trim();
+                process.close();
             }
+            catch (e:Dynamic) {}
+        }
+
+        if (output.length > 0 && FileSystem.exists(Path.join([output, 'package.json']))) {
+            try {
+                var packageJson = Json.parse(File.getContent(Path.join([output, 'package.json'])));
+                if (packageJson.name == 'ceramic-tools') {
+                    return Path.directory(output);
+                }
+            }
+            catch (e:Dynamic) {}
         }
 
         return null;
-
-    }
-
-    static function resolveCeramicParentDir(cwd:String):String {
-
-        var normalized = Path.normalize(cwd);
-        var parts = normalized.split('/');
-        var packageDir = 'ceramic/tools/package.json';
-
-        while (!FileSystem.exists(Path.join([parts.join('/'), packageDir])) && parts.length > 1) {
-            parts.pop();
-        }
-
-        if (FileSystem.exists(Path.join([parts.join('/'), packageDir]))) {
-            return Path.normalize(parts.join('/'));
-        }
-
-        return normalized;
 
     }
 
