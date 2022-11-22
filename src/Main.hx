@@ -220,10 +220,7 @@ class Main {
                 if (platform == 'windows')
                     runCeramic(ceramicPath, ['link']);
                 else {
-                    print('In order to make ceramic available globally, run this command:');
-                    print('  ');
-                    print('  cd \'' + ceramicToolsPath + '\' && sudo ./ceramic link && cd ../..');
-                    print('  ');
+                    runCeramic(ceramicPath, ['link'], true);
                 }
             }
             runCeramic(ceramicPath, ['help']);
@@ -285,7 +282,7 @@ class Main {
 
     }
 
-    static function runCeramic(cwd:String, args:Array<String>):Void {
+    static function runCeramic(cwd:String, args:Array<String>, sudo:Bool = false):Void {
 
         var args = [].concat(args);
 
@@ -305,7 +302,12 @@ class Main {
             Sys.command('./ceramic.cmd', args);
         }
         else {
-            Sys.command('./ceramic', args);
+            if (sudo) {
+                Sys.command('sudo', ['./ceramic'].concat(args));
+            }
+            else {
+                Sys.command('./ceramic', args);
+            }
         }
         Sys.setCwd(prevCwd);
 

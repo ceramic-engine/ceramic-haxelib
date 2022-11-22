@@ -1,6 +1,6 @@
 # ceramic (via haxelib)
 
-Install ceramic via haxelib in current working directory:
+Install ceramic via haxelib in home directory (USERPROFILE on windows, HOME on mac/linux):
 
 ```bash
 haxelib install ceramic

@@ -3,10 +3,10 @@
     "url" : "https://github.com/ceramic-engine/ceramic",
     "license": "MIT",
     "tags": ["cross", "platform", "2d", "multimedia", "framework"],
-    "description": "Install ceramic via haxelib",
-    "version": "0.3.1",
+    "description": "Utility to install and update ceramic via haxelib",
+    "version": "0.4.0",
     "classPath": "src/",
-    "releasenote": "Fix failure to resolve some directories from CWD when no existing ceramic installation exist",
+    "releasenote": "Simplify rules about where to install Ceramic + a few fixes",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
