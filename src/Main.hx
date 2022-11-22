@@ -64,8 +64,8 @@ class Main {
         ceramicPath = resolveCeramicPath(cwd);
         if (ceramicPath == null) {
             if (customCwd == null) {
-                if (platform == 'windows') {
-                    cwd = cwd.substr(0, 1) + ':\\';
+                if (platform == 'windows' && env.exists('USERPROFILE')) {
+                    cwd = env.get('USERPROFILE');
                 }
                 else if (env.exists('HOME')) {
                     cwd = env.get('HOME');
@@ -217,7 +217,14 @@ class Main {
                 confirmLink = confirm(msg);
             }
             if (confirmLink) {
-                runCeramic(ceramicPath, ['link']);
+                if (platform == 'windows')
+                    runCeramic(ceramicPath, ['link']);
+                else {
+                    print('In order to make ceramic available globally, run this command:');
+                    print('  ');
+                    print('  cd \'' + ceramicToolsPath + '\' && sudo ./ceramic link && cd ../..');
+                    print('  ');
+                }
             }
             runCeramic(ceramicPath, ['help']);
         }
