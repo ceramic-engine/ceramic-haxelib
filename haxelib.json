@@ -4,9 +4,9 @@
     "license": "MIT",
     "tags": ["cross", "platform", "2d", "multimedia", "framework"],
     "description": "Utility to install and update ceramic via haxelib",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "classPath": "src/",
-    "releasenote": "Simplify rules about where to install Ceramic + a few fixes",
+    "releasenote": "Fix http requests failing due to not having an user-agent",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
