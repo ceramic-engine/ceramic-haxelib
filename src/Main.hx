@@ -1,7 +1,5 @@
 package;
 
-import com.akifox.asynchttp.HttpRequest;
-import com.akifox.asynchttp.HttpResponse;
 import haxe.Http;
 import haxe.Json;
 import haxe.io.Path;
@@ -123,7 +121,7 @@ class Main {
 
     static function setup():Void {
 
-        var releaseInfo = resolveLatestRelease();
+        var releaseInfo:Dynamic = resolveLatestRelease();
 
         var targetTag = extractArgValue(argv, 'version');
 
@@ -228,6 +226,16 @@ class Main {
 
     }
 
+    static function requestUrl(url:String):Null<String> {
+        var h = new Http(url);
+        h.setHeader('User-Agent', 'request');
+        h.onError = err -> {
+            throw 'Http error: ' + err;
+        };
+        h.request();
+        return h.responseData;
+    }
+
     static function resolveLatestRelease():Dynamic {
 
         var releases:Array<Dynamic> = Json.parse(requestUrl('https://api.github.com/repos/ceramic-engine/ceramic/releases'));
@@ -310,29 +318,6 @@ class Main {
             }
         }
         Sys.setCwd(prevCwd);
-
-    }
-
-    static function requestUrl(url:String):String {
-
-        var result:String = null;
-
-        var request = new HttpRequest({
-            async: false,
-            url: url,
-            callback: function(response:HttpResponse):Void {
-                if (response.isOK) {
-                    result = response.content;
-                }
-                else {
-                    throw 'Http error: ' + response.status + ' / ' + response.error;
-                }
-            }
-        });
-
-        request.send();
-
-        return result;
 
     }
 
