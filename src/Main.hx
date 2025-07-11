@@ -13,6 +13,8 @@ class Main {
 
     static var platform:String;
 
+    static var platformArchSuffix:String;
+
     static var cwd:String;
 
     static var argv:Array<String>;
@@ -40,6 +42,10 @@ class Main {
             cwd = customCwd;
         }
 
+        if (cwd == null) {
+            cwd = Sys.getCwd();
+        }
+
         platform = switch Sys.systemName() {
             default: null;
             case null: null;
@@ -52,14 +58,28 @@ class Main {
             fail('Invalid platform.');
         }
 
+        // Determine platform with architecture suffix
+        platformArchSuffix = platform;
+        var targetTag = extractArgValue(argv, 'version');
+        if (platform == 'linux' && (targetTag == null || (!targetTag.startsWith('1') && !targetTag.startsWith('v1')))) {
+            var arch = getLinuxArchitecture();
+            if (arch == 'arm64' || arch == 'aarch64') {
+                platformArchSuffix = 'linux-arm64';
+            } else {
+                platformArchSuffix = 'linux-x86_64';
+            }
+        }
+
         var commandName:String = null;
         if (argv.length > 0 && !argv[0].startsWith('-'))
             commandName = argv[0];
 
         var env = Sys.environment();
 
+        // Check if ceramic is installed globally
+        ceramicPath = resolveCeramicPath();
+
         // In case no ceramic was detected, check root/home directory
-        ceramicPath = resolveCeramicPath(cwd);
         if (ceramicPath == null) {
             if (customCwd == null) {
                 if (platform == 'windows' && env.exists('USERPROFILE')) {
@@ -73,7 +93,7 @@ class Main {
         }
 
 
-        ceramicZipPath = Path.join([cwd, 'ceramic-$platform.zip']);
+        ceramicZipPath = Path.join([cwd, 'ceramic-$platformArchSuffix.zip']);
         ceramicToolsPath = Path.join([ceramicPath, 'tools']);
         ceramicPackagePath = Path.join([ceramicPath, 'tools', 'package.json']);
         ceramicGitHeadPath = Path.join([ceramicPath, '.git', 'HEAD']);
@@ -117,6 +137,19 @@ class Main {
                 }
         }
 
+    }
+
+    static function getLinuxArchitecture():String {
+        try {
+            var process = new sys.io.Process('uname', ['-m']);
+            var output = process.stdout.readAll().toString().trim();
+            process.close();
+            return output;
+        }
+        catch (e:Dynamic) {
+            // Default to x86_64 if we can't determine
+            return 'x86_64';
+        }
     }
 
     static function setup():Void {
@@ -183,13 +216,14 @@ class Main {
         }
 
         if (confirmed) {
+
             // Delete any existing zip
             if (FileSystem.exists(ceramicZipPath)) {
                 deleteRecursive(ceramicZipPath);
             }
 
             // Download
-            downloadFile('https://github.com/ceramic-engine/ceramic/releases/download/$targetTag/ceramic-$platform.zip', ceramicZipPath);
+            downloadFile('https://github.com/ceramic-engine/ceramic/releases/download/$targetTag/ceramic-$platformArchSuffix.zip', ceramicZipPath);
 
             // Delete any existing ceramic installation
             if (FileSystem.exists(ceramicPath)) {
@@ -244,7 +278,7 @@ class Main {
             if (release.assets != null) {
                 var assets:Array<Dynamic> = release.assets;
                 for (asset in assets) {
-                    if (asset.name == 'ceramic-$platform.zip') {
+                    if (asset.name == 'ceramic-$platformArchSuffix.zip') {
                         return release;
                     }
                 }
@@ -256,7 +290,7 @@ class Main {
 
     }
 
-    static function resolveCeramicPath(cwd:String):String {
+    static function resolveCeramicPath():String {
 
         var output = '';
 
@@ -279,7 +313,7 @@ class Main {
         if (output.length > 0 && FileSystem.exists(Path.join([output, 'package.json']))) {
             try {
                 var packageJson = Json.parse(File.getContent(Path.join([output, 'package.json'])));
-                if (packageJson.name == 'ceramic-tools') {
+                if (packageJson.name == 'ceramic-tools' || packageJson.name == 'ceramic') {
                     return Path.directory(output);
                 }
             }
@@ -416,6 +450,25 @@ class Main {
         }
 
         print("Done");
+
+    }
+
+    static function untarGzFile(source:String, targetPath:String):Void {
+
+        print('Unpacking... (this may take a while)');
+
+        if (platform == 'mac' || platform == 'linux') {
+
+            var prevCwd = Sys.getCwd();
+            Sys.setCwd(cwd);
+            Sys.command('tar', ['-xzf', source, '-C', targetPath]);
+            Sys.setCwd(prevCwd);
+
+        }
+        else {
+
+            throw "Untar on platform " + platform + " not supported";
+        }
 
     }
 

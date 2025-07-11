@@ -2,11 +2,11 @@
     "name": "ceramic",
     "url" : "https://github.com/ceramic-engine/ceramic",
     "license": "MIT",
-    "tags": ["cross", "platform", "2d", "multimedia", "framework"],
+    "tags": ["cross", "platform", "2d", "multimedia", "framework", "game", "engine"],
     "description": "Utility to install and update ceramic via haxelib",
-    "version": "0.4.1",
+    "version": "2.0.0",
     "classPath": "src/",
-    "releasenote": "Fix http requests failing due to not having an user-agent",
+    "releasenote": "Compatibility with Ceramic v2.0+",
     "contributors": ["jeremyfa"],
     "dependencies": {}
   }
